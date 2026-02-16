@@ -3,6 +3,28 @@
 
   var WEBHOOK_URL = "https://ben-unconflictive-many.ngrok-free.dev/webhook/drive-chatbot-api";
 
+  function cleanMarkdown(text) {
+    if (text == null) return "";
+    var s = String(text);
+
+    // normalize newlines
+    s = s.replace(/\r\n/g, "\n");
+
+    // remove bold/italic markers **text** or *text* or __text__ or _text_
+    s = s.replace(/\*\*(.*?)\*\*/g, "$1");
+    s = s.replace(/\*(.*?)\*/g, "$1");
+    s = s.replace(/__(.*?)__/g, "$1");
+    s = s.replace(/_(.*?)_/g, "$1");
+
+    // replace markdown bullets like "* " or "- " with a uniform bullet
+    s = s.replace(/^\s*[*-]\s+/gm, "• ");
+
+    // collapse multiple blank lines
+    s = s.replace(/\n{3,}/g, "\n\n");
+
+    return s.trim();
+  }
+
   var form = document.getElementById("analyzerForm");
   var driveFolderIdInput = document.getElementById("driveFolderId");
   var messageInput = document.getElementById("message");
@@ -258,7 +280,8 @@
     emptyState.classList.add("hidden");
 
     keys.forEach(function (key) {
-      var value = stringifyValue(data[key]);
+      var rawValue = stringifyValue(data[key]);
+      var value = key === "response" ? cleanMarkdown(rawValue) : rawValue;
       var row = document.createElement("article");
       row.className = "result-row";
 
