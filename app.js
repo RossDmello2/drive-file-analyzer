@@ -41,6 +41,7 @@
   var runAgainButton = document.getElementById("runAgainButton");
   var statusMessage = document.getElementById("statusMessage");
   var statusMessageInline = document.getElementById("statusMessageInline");
+  var configDropdown = document.getElementById("configDropdown");
 
   var driveFolderIdError = document.getElementById("driveFolderIdError");
   var messageError = document.getElementById("messageError");
@@ -106,6 +107,12 @@
     clearResults();
     hideError();
     hideRunAgain();
+    if (configDropdown) {
+      configDropdown.open = false;
+    }
+    if (metadataSection && "open" in metadataSection) {
+      metadataSection.open = false;
+    }
 
     lastRequestSnapshot = null;
     currentSessionId = generateSessionId();
@@ -119,6 +126,9 @@
     var files = Array.from(filesInput.files || []);
 
     if (!normalizedFolderId) {
+      if (configDropdown) {
+        configDropdown.open = true;
+      }
       setFieldError(driveFolderIdError, "Google Drive Folder is required.");
       invalidFields.push(driveFolderIdInput);
     }
@@ -290,6 +300,9 @@
       emptyState.classList.remove("hidden");
       if (metadataSection) {
         metadataSection.classList.add("hidden");
+        if ("open" in metadataSection) {
+          metadataSection.open = false;
+        }
       }
       return;
     }
@@ -314,6 +327,9 @@
     resultsContainer.innerHTML = "";
     if (metadataSection) {
       metadataSection.classList.add("hidden");
+      if ("open" in metadataSection) {
+        metadataSection.open = false;
+      }
     }
 
     var pendingMessage = snapshot && snapshot.message ? snapshot.message : "";
@@ -342,8 +358,18 @@
     if (keys.length === 0) {
       if (metadataSection) {
         metadataSection.classList.add("hidden");
+        if ("open" in metadataSection) {
+          metadataSection.open = false;
+        }
       }
       return;
+    }
+
+    if (metadataSection) {
+      metadataSection.classList.remove("hidden");
+      if ("open" in metadataSection) {
+        metadataSection.open = false;
+      }
     }
 
     keys.forEach(function (key) {
@@ -421,6 +447,9 @@
     emptyState.classList.add("hidden");
     if (metadataSection) {
       metadataSection.classList.add("hidden");
+      if ("open" in metadataSection) {
+        metadataSection.open = false;
+      }
     }
     resultsSection.classList.add("hidden");
   }
@@ -475,6 +504,9 @@
 
   function focusFirstInvalid(invalidFields) {
     if (invalidFields && invalidFields.length > 0 && typeof invalidFields[0].focus === "function") {
+      if (invalidFields[0] === driveFolderIdInput && configDropdown) {
+        configDropdown.open = true;
+      }
       invalidFields[0].focus();
     }
   }
