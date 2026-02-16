@@ -42,6 +42,9 @@
   var statusMessage = document.getElementById("statusMessage");
   var statusMessageInline = document.getElementById("statusMessageInline");
   var configDropdown = document.getElementById("configDropdown");
+  var welcomeScreen = document.getElementById("welcomeScreen");
+  var newChatButton = document.getElementById("newChatButton");
+  var promptCards = document.querySelectorAll(".prompt-card");
 
   var driveFolderIdError = document.getElementById("driveFolderIdError");
   var messageError = document.getElementById("messageError");
@@ -65,8 +68,23 @@
   form.addEventListener("submit", handleSubmit);
   retryButton.addEventListener("click", handleRetry);
   runAgainButton.addEventListener("click", handleRunAgain);
+  if (newChatButton) {
+    newChatButton.addEventListener("click", handleRunAgain);
+  }
+  promptCards.forEach(function (card) {
+    card.addEventListener("click", function () {
+      var suggestion = card.getAttribute("data-suggestion") || "";
+      messageInput.value = suggestion;
+      messageInput.focus();
+      if (typeof messageInput.setSelectionRange === "function") {
+        var end = messageInput.value.length;
+        messageInput.setSelectionRange(end, end);
+      }
+    });
+  });
 
   setStatus("Ready.");
+  setWelcomeVisibility(true);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -117,6 +135,7 @@
     lastRequestSnapshot = null;
     currentSessionId = generateSessionId();
     setStatus("Ready.");
+    setWelcomeVisibility(true);
   }
 
   function prepareSubmissionFromForm() {
@@ -196,6 +215,7 @@
     clearResults();
     hideError();
     setStatus("Sending request...");
+    setWelcomeVisibility(false);
     renderPendingConversation(snapshot);
 
     try {
@@ -289,6 +309,7 @@
 
   function renderResults(data) {
     hideError();
+    setWelcomeVisibility(false);
     if (chatTranscript) {
       chatTranscript.innerHTML = "";
     }
@@ -322,6 +343,7 @@
     }
 
     resultsSection.classList.remove("hidden");
+    setWelcomeVisibility(false);
     emptyState.classList.add("hidden");
     chatTranscript.innerHTML = "";
     resultsContainer.innerHTML = "";
@@ -456,6 +478,7 @@
 
   function renderError(error) {
     clearResults();
+    setWelcomeVisibility(false);
     errorStatus.textContent = error.status ? "HTTP " + error.status + (error.statusText ? " " + error.statusText : "") : "Request error";
     errorMessage.textContent = error.message || "An unexpected error occurred.";
     errorSection.classList.remove("hidden");
@@ -487,6 +510,17 @@
     statusMessage.textContent = message;
     if (statusMessageInline) {
       statusMessageInline.textContent = message;
+    }
+  }
+
+  function setWelcomeVisibility(visible) {
+    if (!welcomeScreen) {
+      return;
+    }
+    if (visible) {
+      welcomeScreen.classList.remove("hidden");
+    } else {
+      welcomeScreen.classList.add("hidden");
     }
   }
 

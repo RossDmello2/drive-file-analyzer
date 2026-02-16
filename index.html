@@ -7,84 +7,136 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="app-shell">
-    <header class="app-header">
-      <div class="brand">
-        <h1>Drive File Analyzer</h1>
-        <p>Chat with your Drive analyzer powered by n8n and Gemini.</p>
-      </div>
-      <p id="statusMessage" class="status-badge" aria-live="polite">Ready.</p>
-    </header>
-
-    <section class="chat-main" aria-live="polite">
-      <section id="resultsSection" class="chat-panel hidden" aria-labelledby="resultsTitle">
-        <h2 id="resultsTitle">Conversation</h2>
-        <div id="chatTranscript" class="chat-transcript"></div>
-        <p id="emptyState" class="empty-state hidden">No data returned.</p>
-
-        <details id="metadataSection" class="metadata-drawer hidden">
-          <summary>Technical details</summary>
-          <div id="resultsContainer" class="metadata-grid"></div>
-        </details>
-      </section>
-
-      <section id="errorSection" class="error-panel hidden" aria-labelledby="errorTitle" role="alert">
-        <h2 id="errorTitle">Something went wrong</h2>
-        <p id="errorStatus" class="error-status"></p>
-        <p id="errorMessage" class="error-message"></p>
-        <button id="retryButton" class="secondary" type="button">Retry</button>
-      </section>
-    </section>
-
-    <section class="composer-shell" aria-labelledby="formTitle">
-      <h2 id="formTitle">Ask the assistant</h2>
-      <form id="analyzerForm" novalidate>
-        <div class="field">
-          <label for="message">Message</label>
-          <textarea
-            id="message"
-            name="message"
-            placeholder='Type a message, filename, or "list files"'
-            required
-            rows="4"
-          ></textarea>
-          <p id="messageError" class="field-error hidden" role="alert"></p>
-        </div>
-
-        <details id="configDropdown" class="config-dropdown">
-          <summary>Configurations</summary>
-          <div class="config-content">
-            <div class="field">
-              <label for="driveFolderId">Google Drive Folder</label>
-              <input
-                id="driveFolderId"
-                name="driveFolderId"
-                type="text"
-                placeholder="Paste Drive folder link or ID"
-                required
-                autocomplete="off"
-              >
-              <p id="driveFolderIdError" class="field-error hidden" role="alert"></p>
-            </div>
-
-            <div class="field">
-              <label for="files">Upload files (optional)</label>
-              <input id="files" name="files" type="file" multiple>
-            </div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand-wrap">
+          <div class="brand-logo">D</div>
+          <div class="brand-text">
+            <strong>DriveAI</strong>
+            <span>Analyzer Pro</span>
           </div>
-        </details>
-
-        <div class="button-row">
-          <button id="submitButton" type="submit">
-            <span id="submitButtonText">Send Request</span>
-          </button>
-          <button id="runAgainButton" class="secondary hidden" type="button">Run again</button>
         </div>
+        <button id="newChatButton" class="new-chat-btn" type="button">+ New Chat</button>
+        <input class="search-box" type="text" value="" placeholder="Search conversations..." disabled aria-label="Search conversations">
+      </div>
 
-        <p id="statusMessageInline" class="inline-status" aria-live="polite"></p>
-      </form>
-    </section>
-  </main>
+      <div class="sidebar-list">
+        <p class="list-label">Today</p>
+        <button class="chat-item active" type="button">Drive File Analyzer</button>
+        <button class="chat-item" type="button" disabled>Resume Analysis</button>
+        <button class="chat-item" type="button" disabled>Invoice Summary</button>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button class="plain-btn" type="button" disabled>Settings</button>
+        <button class="plain-btn" type="button" disabled>Help</button>
+      </div>
+    </aside>
+
+    <main class="main-shell">
+      <header class="topbar">
+        <div class="model-pill">
+          <strong>DriveAI Pro</strong>
+          <span>WEBHOOK</span>
+        </div>
+        <p id="statusMessage" class="status-pill" aria-live="polite">Ready.</p>
+      </header>
+
+      <section class="chat-main" aria-live="polite">
+        <section id="welcomeScreen" class="welcome-screen">
+          <div class="welcome-icon">AI</div>
+          <h1>How can I help you today?</h1>
+          <p>Analyze Drive files, list folder contents, and ask follow-up questions with a professional chat workflow.</p>
+          <div class="prompt-grid">
+            <button class="prompt-card" type="button" data-suggestion="list files">
+              <strong>List files</strong>
+              <span>Show files available in the selected Drive folder.</span>
+            </button>
+            <button class="prompt-card" type="button" data-suggestion="analyze invoice.pdf">
+              <strong>Analyze document</strong>
+              <span>Summarize and extract insights from a specific file.</span>
+            </button>
+            <button class="prompt-card" type="button" data-suggestion="what are the key skills in this resume?">
+              <strong>Find highlights</strong>
+              <span>Identify key points, skills, and structured information.</span>
+            </button>
+            <button class="prompt-card" type="button" data-suggestion="compare these two reports">
+              <strong>Compare files</strong>
+              <span>Upload documents and ask comparative questions.</span>
+            </button>
+          </div>
+        </section>
+
+        <section id="resultsSection" class="chat-panel hidden" aria-labelledby="resultsTitle">
+          <h2 id="resultsTitle">Conversation</h2>
+          <div id="chatTranscript" class="chat-transcript"></div>
+          <p id="emptyState" class="empty-state hidden">No data returned.</p>
+
+          <details id="metadataSection" class="metadata-drawer hidden">
+            <summary>Technical details</summary>
+            <div id="resultsContainer" class="metadata-grid"></div>
+          </details>
+        </section>
+
+        <section id="errorSection" class="error-panel hidden" aria-labelledby="errorTitle" role="alert">
+          <h2 id="errorTitle">Something went wrong</h2>
+          <p id="errorStatus" class="error-status"></p>
+          <p id="errorMessage" class="error-message"></p>
+          <button id="retryButton" class="secondary" type="button">Retry</button>
+        </section>
+      </section>
+
+      <section class="composer-shell" aria-labelledby="formTitle">
+        <h2 id="formTitle">Ask the assistant</h2>
+        <form id="analyzerForm" novalidate>
+          <div class="field">
+            <label for="message">Message</label>
+            <textarea
+              id="message"
+              name="message"
+              placeholder='Type a message, filename, or "list files"'
+              required
+              rows="4"
+            ></textarea>
+            <p id="messageError" class="field-error hidden" role="alert"></p>
+          </div>
+
+          <details id="configDropdown" class="config-dropdown">
+            <summary>Configurations</summary>
+            <div class="config-content">
+              <div class="field">
+                <label for="driveFolderId">Google Drive Folder</label>
+                <input
+                  id="driveFolderId"
+                  name="driveFolderId"
+                  type="text"
+                  placeholder="Paste Drive folder link or ID"
+                  required
+                  autocomplete="off"
+                >
+                <p id="driveFolderIdError" class="field-error hidden" role="alert"></p>
+              </div>
+
+              <div class="field">
+                <label for="files">Upload files (optional)</label>
+                <input id="files" name="files" type="file" multiple>
+              </div>
+            </div>
+          </details>
+
+          <div class="button-row">
+            <button id="submitButton" type="submit">
+              <span id="submitButtonText">Send Request</span>
+            </button>
+            <button id="runAgainButton" class="secondary hidden" type="button">Run again</button>
+          </div>
+
+          <p id="statusMessageInline" class="inline-status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+  </div>
 
   <script src="app.js" defer></script>
 </body>
