@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   var WEBHOOK_URL = "https://ben-unconflictive-many.ngrok-free.dev/webhook/drive-chatbot-api";
@@ -8,23 +8,30 @@
     var s = String(text);
 
     // normalize newlines
-    s = s.replace(/\r\n/g, "\n");
+    s = s.replace(/\r\n?/g, "\n");
+
+    // remove markdown heading markers
+    s = s.replace(/^\s{0,3}#{1,6}\s+/gm, "");
 
     // remove bold/italic markers **text** or *text* or __text__ or _text_
-    s = s.replace(/\*\*(.*?)\*\*/g, "$1");
-    s = s.replace(/\*(.*?)\*/g, "$1");
-    s = s.replace(/__(.*?)__/g, "$1");
-    s = s.replace(/_(.*?)_/g, "$1");
+    s = s.replace(/\*\*([^*\n]+)\*\*/g, "$1");
+    s = s.replace(/__([^_\n]+)__/g, "$1");
+    s = s.replace(/(^|[^\w])\*([^*\n]+)\*(?!\w)/g, "$1$2");
+    s = s.replace(/(^|[^\w])_([^_\n]+)_(?!\w)/g, "$1$2");
 
     // replace markdown bullets like "* " or "- " with a uniform bullet
-    s = s.replace(/^\s*[*-]\s+/gm, "• ");
+    s = s.replace(/^\s*[*+-]\s+/gm, "\u2022 ");
+
+    // remove common leftover markers so raw markdown symbols are not shown
+    s = s.replace(/\*/g, "");
+    s = s.replace(/(^|[\s(])_+([^\s_][^_\n]*?)_+(?=[\s).,!?;:]|$)/g, "$1$2");
+    s = s.replace(/\s+$/gm, "");
 
     // collapse multiple blank lines
     s = s.replace(/\n{3,}/g, "\n\n");
 
     return s.trim();
   }
-
   var form = document.getElementById("analyzerForm");
   var driveFolderIdInput = document.getElementById("driveFolderId");
   var messageInput = document.getElementById("message");
@@ -293,7 +300,7 @@
       valueCell.className = "result-value";
 
       var valueText = document.createElement("pre");
-      valueText.className = "value-text";
+      valueText.className = key === "response" ? "value-text response-text" : "value-text";
       valueText.textContent = value;
 
       var copyBtn = document.createElement("button");
@@ -467,3 +474,4 @@
     return "sess-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
   }
 })();
+

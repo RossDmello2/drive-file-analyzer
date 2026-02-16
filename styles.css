@@ -176,6 +176,13 @@ button.secondary:hover:enabled {
   padding: 0.55rem;
 }
 
+.response-text {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.55;
+  font-size: 0.98rem;
+  background: #ffffff;
+}
+
 .copy-button {
   justify-self: start;
   background: #fff;
