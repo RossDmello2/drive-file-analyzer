@@ -40,12 +40,15 @@
   var submitButtonText = document.getElementById("submitButtonText");
   var runAgainButton = document.getElementById("runAgainButton");
   var statusMessage = document.getElementById("statusMessage");
+  var statusMessageInline = document.getElementById("statusMessageInline");
 
   var driveFolderIdError = document.getElementById("driveFolderIdError");
   var messageError = document.getElementById("messageError");
 
   var resultsSection = document.getElementById("resultsSection");
+  var chatTranscript = document.getElementById("chatTranscript");
   var resultsContainer = document.getElementById("resultsContainer");
+  var metadataSection = document.getElementById("metadataSection");
   var emptyState = document.getElementById("emptyState");
 
   var errorSection = document.getElementById("errorSection");
@@ -183,6 +186,7 @@
     clearResults();
     hideError();
     setStatus("Sending request...");
+    renderPendingConversation(snapshot);
 
     try {
       var requestConfig = buildRequest(snapshot);
@@ -275,54 +279,149 @@
 
   function renderResults(data) {
     hideError();
+    if (chatTranscript) {
+      chatTranscript.innerHTML = "";
+    }
     resultsContainer.innerHTML = "";
     resultsSection.classList.remove("hidden");
 
     var keys = Object.keys(data);
     if (keys.length === 0) {
       emptyState.classList.remove("hidden");
+      if (metadataSection) {
+        metadataSection.classList.add("hidden");
+      }
       return;
     }
 
     emptyState.classList.add("hidden");
+    if (metadataSection) {
+      metadataSection.classList.remove("hidden");
+    }
+
+    renderConversation(data);
+    renderMetadata(data);
+  }
+
+  function renderPendingConversation(snapshot) {
+    if (!chatTranscript) {
+      return;
+    }
+
+    resultsSection.classList.remove("hidden");
+    emptyState.classList.add("hidden");
+    chatTranscript.innerHTML = "";
+    resultsContainer.innerHTML = "";
+    if (metadataSection) {
+      metadataSection.classList.add("hidden");
+    }
+
+    var pendingMessage = snapshot && snapshot.message ? snapshot.message : "";
+    chatTranscript.appendChild(createBubble("You", pendingMessage, "user", false));
+    chatTranscript.appendChild(createBubble("Assistant", "Thinking...", "assistant", false));
+  }
+
+  function renderConversation(data) {
+    if (!chatTranscript) {
+      return;
+    }
+
+    var requestMessage = lastRequestSnapshot && lastRequestSnapshot.message ? lastRequestSnapshot.message : "";
+    var responseValue = data.response != null ? stringifyValue(data.response) : "No response field returned.";
+    var assistantText = cleanMarkdown(responseValue);
+
+    chatTranscript.appendChild(createBubble("You", requestMessage, "user", false));
+    chatTranscript.appendChild(createBubble("Assistant", assistantText, "assistant", true));
+  }
+
+  function renderMetadata(data) {
+    var keys = Object.keys(data).filter(function (key) {
+      return key !== "response";
+    });
+
+    if (keys.length === 0) {
+      if (metadataSection) {
+        metadataSection.classList.add("hidden");
+      }
+      return;
+    }
 
     keys.forEach(function (key) {
-      var rawValue = stringifyValue(data[key]);
-      var value = key === "response" ? cleanMarkdown(rawValue) : rawValue;
-      var row = document.createElement("article");
-      row.className = "result-row";
+      var value = stringifyValue(data[key]);
+      var longValue = value.length > 120 || value.indexOf("\n") !== -1;
+      var card = document.createElement("article");
+      card.className = "meta-card";
 
-      var keyCell = document.createElement("div");
-      keyCell.className = "result-key";
-      keyCell.textContent = key;
+      var keyNode = document.createElement("p");
+      keyNode.className = "meta-key";
+      keyNode.textContent = key;
 
-      var valueCell = document.createElement("div");
-      valueCell.className = "result-value";
-
-      var valueText = document.createElement("pre");
-      valueText.className = key === "response" ? "value-text response-text" : "value-text";
-      valueText.textContent = value;
+      var valueNode = document.createElement("pre");
+      valueNode.className = longValue ? "meta-value long" : "meta-value";
+      valueNode.textContent = value;
 
       var copyBtn = document.createElement("button");
       copyBtn.type = "button";
-      copyBtn.className = "copy-button";
+      copyBtn.className = "copy-button secondary";
       copyBtn.textContent = "Copy";
       copyBtn.addEventListener("click", function () {
         copyValue(copyBtn, value);
       });
 
-      valueCell.appendChild(valueText);
-      valueCell.appendChild(copyBtn);
-      row.appendChild(keyCell);
-      row.appendChild(valueCell);
-
-      resultsContainer.appendChild(row);
+      card.appendChild(keyNode);
+      card.appendChild(valueNode);
+      card.appendChild(copyBtn);
+      resultsContainer.appendChild(card);
     });
   }
 
+  function createBubble(label, text, role, allowCopy) {
+    var row = document.createElement("article");
+    row.className = "bubble-row " + role;
+
+    var bubble = document.createElement("div");
+    bubble.className = "bubble " + role;
+
+    var labelNode = document.createElement("span");
+    labelNode.className = "bubble-label";
+    labelNode.textContent = label;
+
+    var textNode = document.createElement("p");
+    textNode.className = "bubble-text";
+    textNode.textContent = text;
+
+    bubble.appendChild(labelNode);
+    bubble.appendChild(textNode);
+
+    if (allowCopy) {
+      var actions = document.createElement("div");
+      actions.className = "bubble-actions";
+
+      var copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "copy-button secondary";
+      copyBtn.textContent = "Copy";
+      copyBtn.addEventListener("click", function () {
+        copyValue(copyBtn, text);
+      });
+
+      actions.appendChild(copyBtn);
+      bubble.appendChild(actions);
+    }
+
+    row.appendChild(bubble);
+    return row;
+  }
+
   function clearResults() {
+    if (chatTranscript) {
+      chatTranscript.innerHTML = "";
+    }
     resultsContainer.innerHTML = "";
     emptyState.classList.add("hidden");
+    if (metadataSection) {
+      metadataSection.classList.add("hidden");
+    }
     resultsSection.classList.add("hidden");
   }
 
@@ -357,6 +456,9 @@
 
   function setStatus(message) {
     statusMessage.textContent = message;
+    if (statusMessageInline) {
+      statusMessageInline.textContent = message;
+    }
   }
 
   function setFieldError(element, message) {
